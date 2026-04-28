@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Photo Tool</title>
+<style>
+body{
+    font-family: Arial;
+    text-align:center;
+    background:#0f172a;
+    color:white;
+}
+.container{
+    margin-top:50px;
+}
+canvas{
+    margin-top:20px;
+    border:2px solid white;
+}
+button{
+    margin-top:10px;
+    padding:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>Photo Tool</h1>
+
+<input type="file" id="upload">
+
+<br>
+
+<button onclick="compressImage()">Compress Image</button>
+<button onclick="changeBg()">Change Background</button>
+
+<br>
+
+<canvas id="canvas"></canvas>
+
+</div>
+
+<script>
+
+let img = new Image();
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+
+document.getElementById("upload").onchange = function(e){
+    let file = e.target.files[0];
+    let reader = new FileReader();
+
+    reader.onload = function(event){
+        img.src = event.target.result;
+    }
+
+    reader.readAsDataURL(file);
+}
+
+img.onload = function(){
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img,0,0);
+}
+
+/* COMPRESS */
+function compressImage(){
+    let compressed = canvas.toDataURL("image/jpeg", 0.3); // quality 0.3
+
+    let link = document.createElement("a");
+    link.href = compressed;
+    link.download = "compressed.jpg";
+    link.click();
+}
+
+/* CHANGE BACKGROUND (simple color replace) */
+function changeBg(){
+    let imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+    let data = imageData.data;
+
+    for(let i=0;i<data.length;i+=4){
+        let r = data[i];
+        let g = data[i+1];
+        let b = data[i+2];
+
+        // detect white background
+        if(r>200 && g>200 && b>200){
+            data[i]=0;     // red
+            data[i+1]=255; // green
+            data[i+2]=0;   // blue (green bg)
+        }
+    }
+
+    ctx.putImageData(imageData,0,0);
+}
+
+</script>
+
+</body>
+</html>
